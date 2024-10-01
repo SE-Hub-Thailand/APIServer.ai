@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-import requests
+# import requests
 
 get_profile_bp = Blueprint('get_profile', __name__)
 

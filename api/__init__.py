@@ -23,4 +23,4 @@ app.register_blueprint(activate_bp)
 app.register_blueprint(heartbeat_bp)
 
 if __name__ == '__main__':
-    app.run(port=5000)
+    app.run(port=5001)
