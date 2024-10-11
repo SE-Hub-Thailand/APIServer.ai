@@ -7,20 +7,20 @@ heartbeat_bp = Blueprint('heartbeat', __name__)
 @heartbeat_bp.route('/heartbeat', methods=['POST'])
 
 def heartbeat():
-    # data = request.json
-    # serial_number = data.get('serialNumber')
+    data = request.json
+    serial_number = data.get('serialNumber')
 
-    # if serial_number:
-    #     return jsonify({
-    #         "serialNumber": serial_number,
-    #         "status": "online"
-    #     }), 200
-    # else:
-    #     return jsonify({"error": "RVM not found"}), 404
-    return jsonify({
-            "serialNumber": "1234567890",
+    if serial_number:
+        return jsonify({
+            "serialNumber": serial_number,
             "status": "online"
         }), 200
+    else:
+        return jsonify({"error": "RVM not found"}), 404
+    # return jsonify({
+    #         "serialNumber": "1234567890",
+    #         "status": "online"
+    #     }), 200
 
 # # Setup logging to keep track of machine status checks
 # logging.basicConfig(filename='/path/to/your/logfile.log', level=logging.INFO)

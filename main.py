@@ -1,15 +1,16 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException
 from ultralytics import YOLO
 from PIL import Image
 import io
 import os
 import shutil
+from fastapi import FastAPI, File, UploadFile, HTTPException
 
 app = FastAPI()
 
 def run_model(image_path): # Run the model based on the item
     model_version = 1
-    model = YOLO(f"weights/best{model_version}.pt")
+    # model = YOLO(f"weights/best{model_version}.pt")
+    model = YOLO(f"weights/brand_model_3.pt")
     results = model(image_path) # Run the model on the image
     results[0].show() # Show the image with the detections
     return model, results
@@ -85,6 +86,7 @@ async def process_image_bottle(file: UploadFile = File(...)):
                 cls = int(detection.cls.numpy())  # Ensure this is an integer
                 items_model = model.names.get(cls, "Unknown")  # Safely access class name
                 print(f"Class: {items_model}, Confidence: {confidence}")
+
             is_valid_bottle = check_item(item, items_model)
             if not is_valid_bottle:
                 valid_path = f"images/{item}/valid/{file.filename}"
@@ -124,6 +126,8 @@ async def process_image_can(file: UploadFile = File(...)):
                 valid_path = f"images/{item}/valid/{file.filename}"
                 invalid_path = f"images/{item}/invalid/{file.filename}" # Invalid folder
                 move_image(image_data, valid_path, invalid_path) # Move the image to invalid folder
+
+
             return {
                 "isValidCan": is_valid_can,
                 "confidence": confidence
@@ -132,9 +136,9 @@ async def process_image_can(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail={"error": f"Invalid image formattt: {str(e)}"})
 
 # Start the server using Uvicorn
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+# if __name__ == "__main__":
+#     import uvicorn
+#     uvicorn.run(app, host="0.0.0.0", port=8000)
 
 
 # How to run if have no __main__
