@@ -1,11 +1,19 @@
 #!/bin/bash
 
-# ติดตั้ง dependencies ที่จำเป็น
-pip install fastapi
-pip install ultralytics
-pip install python-multipart
-pip install uvicorn
-pip install numpy==1.24.4
-pip install --upgrade torch ultralytics
+# สร้าง Virtual Environment
+python3 -m venv venv
 
-echo "Installation completed."
+# เปิดใช้งาน Virtual Environment
+source ./venv/bin/activate
+
+# ติดตั้ง dependencies ที่จำเป็น
+pip install uvicorn
+pip install fastapi
+pip install python-multipart
+pip install ultralytics
+
+# อัปเดตระบบและติดตั้ง libgl1 สำหรับ OpenCV
+sudo apt update
+sudo apt install -y libgl1
+
+echo "Setup completed successfully."
