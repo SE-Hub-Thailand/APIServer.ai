@@ -13,8 +13,8 @@ app = Flask(__name__)
 
 # Register each API's blueprint
 app.register_blueprint(get_profile_bp)
-app.register_blueprint(process_image_bottle_bp)
-app.register_blueprint(process_image_can_bp)
+# app.register_blueprint(process_image_bottle_bp)
+# app.register_blueprint(process_image_can_bp)
 app.register_blueprint(calculate_bottle_points_bp)
 app.register_blueprint(calculate_can_points_bp)
 app.register_blueprint(accumulate_points_bp)
@@ -23,4 +23,4 @@ app.register_blueprint(activate_bp)
 app.register_blueprint(heartbeat_bp)
 
 if __name__ == '__main__':
-    app.run(port=5001)
+    app.run(port=5005)
