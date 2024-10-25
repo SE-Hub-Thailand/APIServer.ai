@@ -58,13 +58,14 @@ def check_detection(results):
     return True
 
 def check_image_format(file):
+    print(f"Content type: {file.content_type}")
     if file.content_type not in ["image/jpeg", "image/jpg", "image/png"]:
         return False
     return True
 
 def model_process(file, image_data, item):
-    if not check_image_format(file):
-        raise HTTPException(status_code=400, detail={"error": "Invalid image format"})
+    # if not check_image_format(file):
+    #     raise HTTPException(status_code=400, detail={"error": "Invalid image format"})
     print(f"Processing image: {file.filename}")
     # อัปโหลดรูปภาพไปยัง Strapi
     upload_response = upload_image_to_strapi(image_data, file.filename)
