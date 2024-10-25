@@ -58,7 +58,7 @@ def check_detection(results):
     return True
 
 def check_image_format(file):
-    if file.content_type not in ["image/jpeg", "image/png"]:
+    if file.content_type not in ["image/jpeg", "image/jpg", "image/png"]:
         return False
     return True
 
