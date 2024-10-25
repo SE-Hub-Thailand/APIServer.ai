@@ -65,10 +65,11 @@ def check_image_format(file):
 def model_process(file, image_data, item):
     if not check_image_format(file):
         raise HTTPException(status_code=400, detail={"error": "Invalid image format"})
-
+    print(f"Processing image: {file.filename}")
     # อัปโหลดรูปภาพไปยัง Strapi
     upload_response = upload_image_to_strapi(image_data, file.filename)
-
+    print(f"Upload response: {upload_response}")
+    print(upload_response[0]['url'])
     # ดึง URL ของรูปภาพที่อัปโหลดมาจากการตอบสนองของ Strapi
     image_url = f"{API_URL}{upload_response[0]['url']}"  # การเข้าถึงข้อมูลอาจแตกต่างกันขึ้นอยู่กับโครงสร้างของการตอบสนองจาก Strapi
     print(f"Image URL: {image_url}")
@@ -123,7 +124,7 @@ async def process_image_bottle(file: UploadFile = File(...)):
 
         return {"isValidBottle": is_valid_bottle, "brand": brand, "size": size, "confidence": confidence}
     except Exception as e:
-        raise HTTPException(detail={"error": f"Invalid image format: {str(e)}"})
+        raise HTTPException(status_code=400, detail={"error": f"Invalid image format: {str(e)}"})
 
 @app.post("/processImageCan")
 async def process_image_can(file: UploadFile = File(...)):
@@ -168,7 +169,7 @@ async def process_image_can(file: UploadFile = File(...)):
 
         return {"isValidCan": is_valid_can, "brand": brand, "size": size, "confidence": confidence}
     except Exception as e:
-        raise HTTPException(detail={"error": f"Invalid image format: {str(e)}"})
+        raise HTTPException(status_code=400, detail={"error": f"Invalid image format: {str(e)}"})
 
 if __name__ == "__main__":
     import uvicorn
