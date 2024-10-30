@@ -8,7 +8,8 @@ import requests
 # import numpy as numpy
 
 app = FastAPI()
-API_URL = "https://cookbstaging.careervio.com"
+API_URL = "https://cookc.careervio.com"
+# "https://cookbstaging.careervio.com"
 # "http://64.227.31.13:1337"
 
 def upload_image_to_strapi(image_data, filename):
