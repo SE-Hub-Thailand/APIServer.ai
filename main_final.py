@@ -4,6 +4,7 @@ from ultralytics import YOLO
 import io
 import os
 import shutil
+import requests
 # from flask import Flask, request, jsonify
 from PIL import Image
 import numpy as np
@@ -27,6 +28,23 @@ can_size_classes = ['can_180', 'can_245', 'can_330', 'can_490']
 can_brand_classes = ['birdy', 'calpis_lacto', 'chang', 'green_mate', 'leo', 'nescafe', 'sing'] 
 
 CONFIDENCE_THRESHOLD = 0.3
+API_URL = " https://cookkeptback.sehub-thailand.com"
+
+def upload_image_to_strapi(image_data, filename):
+    url = f"{API_URL}/api/upload"  # เปลี่ยน URL นี้เป็น URL ของ Strapi
+
+    files = {
+        'files': (filename, image_data, 'image/jpeg')
+    }
+
+    response = requests.post(url, files=files)
+
+    if response.status_code == 200:
+        print(f"Uploaded {filename} to Strapi successfully.")
+        return response.json()
+    else:
+        print(f"Failed to upload {filename} to Strapi: {response.status_code}, {response.text}")
+        raise HTTPException(status_code=500, detail="Failed to upload image to Strapi")
 
 def preprocess_image(image_bytes):
     image = Image.open(BytesIO(image_bytes))
@@ -97,7 +115,8 @@ def model_process(file, image_data, item):
     # Save the image on server
     path_image = f"images/{item}/valid/{file.filename}"
     print(f"Image path: {path_image}")
-    save_image(image_data, path_image)
+    upload_image_to_strapi(image_data, file.filename)
+    # save_image(image_data, path_image)
 
 
     # Run the model on the image based on the item
@@ -106,7 +125,7 @@ def model_process(file, image_data, item):
     # Check if the image can be classified
     if not check_detection(results):
         new_path = f"images/{item}/invalid/{file.filename}" # Invalid folder
-        move_image(image_data, path_image, new_path) # Move the image to invalid folder
+        # move_image(image_data, path_image, new_path) # Move the image to invalid folder
         raise HTTPException(status_code=400, detail={"error": "No detections found"})
     return model, results, path_image
 
@@ -140,7 +159,7 @@ async def process_image_bottle(file: UploadFile = File(...)):
             if not is_valid_bottle:
                 valid_path = f"images/{item}/valid/{file.filename}"
                 invalid_path = f"images/{item}/invalid/{file.filename}" # Invalid folder
-                move_image(image_data, valid_path, invalid_path) # Move the image to invalid folder
+                # move_image(image_data, valid_path, invalid_path) # Move the image to invalid folder
                 return {
                     "isValidBottle": is_valid_bottle,
                     "brand": brand,
