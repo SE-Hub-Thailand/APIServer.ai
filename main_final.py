@@ -126,6 +126,8 @@ async def process_image_bottle(file: UploadFile = File(...)):
         brand = "Unknown"
         size = "Unknown"
         confidence = None
+        # size_confidence = None
+        # brand_confidence = None
         if len(results[0].boxes) > 0 and hasattr(results[0], 'boxes'):
             items_model = None
             for detection in results[0].boxes:
@@ -143,10 +145,10 @@ async def process_image_bottle(file: UploadFile = File(...)):
                     "isValidBottle": is_valid_bottle,
                     "brand": brand,
                     "size": size,
-                    "confidence": confidence
+                    "object_confidence": confidence
                     }
 
-        size, brand = predict_category(image_data, model_bottle_size, model_bottle_brand, bottle_size_classes, bottle_brand_classes)
+        size, brand  = predict_category(image_data, model_bottle_size, model_bottle_brand, bottle_size_classes, bottle_brand_classes)
         # model, results = run_model(path_image, "brand_model_3")
         # if check_detection(results):
         #     print("Brand detections found")
@@ -171,7 +173,9 @@ async def process_image_bottle(file: UploadFile = File(...)):
             "isValidBottle": is_valid_bottle,
             "brand": brand,
             "size": size,
-            "confidence": confidence
+            "object_confidence": confidence
+            # "size_confidence": size_confidence,
+            # "brand_confidence": brand_confidence
             }
     except Exception as e:
         raise HTTPException(status_code=400, detail={"error": f"Invalid image formattt: {str(e)}"})
@@ -210,7 +214,7 @@ async def process_image_can(file: UploadFile = File(...)):
                     "isValidCan": is_valid_can,
                     "brand": brand,
                     "size": size,
-                    "confidence": confidence
+                    "object_confidence": confidence
                     }
 
         size, brand = predict_category(image_data, model_can_size, model_can_brand, can_size_classes, can_brand_classes)
@@ -240,7 +244,9 @@ async def process_image_can(file: UploadFile = File(...)):
             "isValidCan": is_valid_can,
             "brand": brand,
             "size": size,
-            "confidence": confidence
+            "object_confidence": confidence
+            # "size_confidence": size_confidence,
+            # "brand_confidence": brand_confidence
             }
     except Exception as e:
         raise HTTPException(status_code=400, detail={"error": f"Invalid image formattt: {str(e)}"})
