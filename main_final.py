@@ -1,11 +1,55 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from ultralytics import YOLO
-from PIL import Image
+# from PIL import Image
 import io
 import os
 import shutil
+# from flask import Flask, request, jsonify
+from PIL import Image
+import numpy as np
+import tensorflow as tf  
+from io import BytesIO
 
 app = FastAPI()
+
+#Bottle Model
+model_bottle_size = tf.keras.models.load_model('weights/bottle_size_model.h5') 
+model_bottle_brand = tf.keras.models.load_model('weights/bottle_brand_model.h5')  
+
+bottle_size_classes = ['bottel_1600', 'bottel_350', 'bottle_1250', 'bottle_1500', 'bottle_1950', 'bottle_280', 'bottle_300', 'bottle_320', 'bottle_322', 'bottle_340', 'bottle_360', 'bottle_400', 'bottle_410', 'bottle_430', 'bottle_440', 'bottle_445', 'bottle_500', 'bottle_600ml', 'bottle_640', 'bottle_750'] 
+bottle_brand_classes = ['amphawa', 'amwelplus', 'aquafina', 'beauti_drink', 'big', 'coca_cola', 'cocomax', 'crystal', 'est', 'ichitan', 'kato', 'mansome', 'mikko', 'minearlwater', 'nestle', 'no_band', 'oishi', 'pepsi', 'sing', 'spinking_water', 'sprite', 'srithep', 'tipchumporn_drinking_water'] 
+
+#Can Model
+model_can_size = tf.keras.models.load_model('weights/can_size_model.h5') 
+model_can_brand = tf.keras.models.load_model('weights/can_brand_model.h5')  
+
+can_size_classes = ['can_180', 'can_245', 'can_330', 'can_490'] 
+can_brand_classes = ['birdy', 'calpis_lacto', 'chang', 'green_mate', 'leo', 'nescafe', 'sing'] 
+
+CONFIDENCE_THRESHOLD = 0.3
+
+def preprocess_image(image_bytes):
+    image = Image.open(BytesIO(image_bytes))
+    image = image.resize((256, 144))  
+    image = np.array(image) / 255.0  
+    image = np.expand_dims(image, axis=0)  
+    return image
+
+def predict_category(image_bytes, model_size, model_brand, size_classes, brand_classes):
+    processed_image = preprocess_image(image_bytes)
+
+    size_prediction = model_size.predict(processed_image)
+    size_index = np.argmax(size_prediction)  
+    size_confidence = np.max(size_prediction) 
+
+    brand_prediction = model_brand.predict(processed_image)
+    brand_index = np.argmax(brand_prediction)  
+    brand_confidence = np.max(brand_prediction)  
+
+    size_name = size_classes[size_index] if size_confidence >= CONFIDENCE_THRESHOLD else "unknown"
+    brand_name = brand_classes[brand_index] if brand_confidence >= CONFIDENCE_THRESHOLD else "unknown"
+
+    return size_name, brand_name
 
 def run_model(image_path, model_name): # Run the model based on the item
     model_version = 1
@@ -102,25 +146,26 @@ async def process_image_bottle(file: UploadFile = File(...)):
                     "confidence": confidence
                     }
 
-        model, results = run_model(path_image, "brand_model_3")
-        if check_detection(results):
-            print("Brand detections found")
-            if len(results[0].boxes) > 0 and hasattr(results[0], 'boxes'):
-                for detection in results[0].boxes:
-                    confidence = float(detection.conf.numpy())  # Ensure this is a float
-                    cls = int(detection.cls.numpy())  # Ensure this is an integer
-                    brand = model.names.get(cls, "Unknown")  # Safely access class name
-                    print(f"Class: {brand}, Confidence: {confidence}")
+        size, brand = predict_category(image_data, model_bottle_size, model_bottle_brand, bottle_size_classes, bottle_brand_classes)
+        # model, results = run_model(path_image, "brand_model_3")
+        # if check_detection(results):
+        #     print("Brand detections found")
+        #     if len(results[0].boxes) > 0 and hasattr(results[0], 'boxes'):
+        #         for detection in results[0].boxes:
+        #             confidence = float(detection.conf.numpy())  # Ensure this is a float
+        #             cls = int(detection.cls.numpy())  # Ensure this is an integer
+        #             brand = model.names.get(cls, "Unknown")  # Safely access class name
+        #             print(f"Class: {brand}, Confidence: {confidence}")
 
-        model, results = run_model(path_image, "size_model")
-        if check_detection(results):
-            print("Size detections found")
-            if len(results[0].boxes) > 0 and hasattr(results[0], 'boxes'):
-                for detection in results[0].boxes:
-                    confidence = float(detection.conf.numpy())  # Ensure this is a float
-                    cls = int(detection.cls.numpy())  # Ensure this is an integer
-                    size = model.names.get(cls, "Unknown")  # Safely access class name
-                    print(f"Class: {size}, Confidence: {confidence}")
+        # model, results = run_model(path_image, "size_model")
+        # if check_detection(results):
+        #     print("Size detections found")
+        #     if len(results[0].boxes) > 0 and hasattr(results[0], 'boxes'):
+        #         for detection in results[0].boxes:
+        #             confidence = float(detection.conf.numpy())  # Ensure this is a float
+        #             cls = int(detection.cls.numpy())  # Ensure this is an integer
+        #             size = model.names.get(cls, "Unknown")  # Safely access class name
+        #             print(f"Class: {size}, Confidence: {confidence}")
 
         return {
             "isValidBottle": is_valid_bottle,
@@ -168,27 +213,28 @@ async def process_image_can(file: UploadFile = File(...)):
                     "confidence": confidence
                     }
 
-        model, results = run_model(path_image, "brand_model_3")
-        if check_detection(results):
-            print("Brand detections found")
-            brand = "Unknown"
-            if len(results[0].boxes) > 0 and hasattr(results[0], 'boxes'):
-                for detection in results[0].boxes:
-                    confidence = float(detection.conf.numpy())  # Ensure this is a float
-                    cls = int(detection.cls.numpy())  # Ensure this is an integer
-                    brand = model.names.get(cls, "Unknown")  # Safely access class name
-                    print(f"Class: {brand}, Confidence: {confidence}")
+        size, brand = predict_category(image_data, model_can_size, model_can_brand, can_size_classes, can_brand_classes)
+        # model, results = run_model(path_image, "brand_model_3")
+        # if check_detection(results):
+        #     print("Brand detections found")
+        #     brand = "Unknown"
+        #     if len(results[0].boxes) > 0 and hasattr(results[0], 'boxes'):
+        #         for detection in results[0].boxes:
+        #             confidence = float(detection.conf.numpy())  # Ensure this is a float
+        #             cls = int(detection.cls.numpy())  # Ensure this is an integer
+        #             brand = model.names.get(cls, "Unknown")  # Safely access class name
+        #             print(f"Class: {brand}, Confidence: {confidence}")
 
-        model, results = run_model(path_image, "size_model")
-        if check_detection(results):
-            print("Size detections found")
-            size = "Unknown"
-            if len(results[0].boxes) > 0 and hasattr(results[0], 'boxes'):
-                for detection in results[0].boxes:
-                    confidence = float(detection.conf.numpy())  # Ensure this is a float
-                    cls = int(detection.cls.numpy())  # Ensure this is an integer
-                    size = model.names.get(cls, "Unknown")  # Safely access class name
-                    print(f"Class: {size}, Confidence: {confidence}")
+        # model, results = run_model(path_image, "size_model")
+        # if check_detection(results):
+        #     print("Size detections found")
+        #     size = "Unknown"
+        #     if len(results[0].boxes) > 0 and hasattr(results[0], 'boxes'):
+        #         for detection in results[0].boxes:
+        #             confidence = float(detection.conf.numpy())  # Ensure this is a float
+        #             cls = int(detection.cls.numpy())  # Ensure this is an integer
+        #             size = model.names.get(cls, "Unknown")  # Safely access class name
+        #             print(f"Class: {size}, Confidence: {confidence}")
 
         return {
             "isValidCan": is_valid_can,
