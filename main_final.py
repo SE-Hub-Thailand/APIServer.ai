@@ -116,18 +116,19 @@ def model_process(file, image_data, item):
     path_image = f"images/{item}/valid/{file.filename}"
     print(f"Image path: {path_image}")
     upload_image_to_strapi(image_data, file.filename)
-    # save_image(image_data, path_image)
+    save_image(image_data, path_image)
 
 
     # Run the model on the image based on the item
     model, results = run_model(path_image, "best4")
+    delete_image(path_image)
     # print(f"Results: {results}")
     # Check if the image can be classified
     if not check_detection(results):
-        new_path = f"images/{item}/invalid/{file.filename}" # Invalid folder
+        # new_path = f"images/{item}/invalid/{file.filename}" # Invalid folder
         # move_image(image_data, path_image, new_path) # Move the image to invalid folder
         raise HTTPException(status_code=400, detail={"error": "No detections found"})
-    return model, results, path_image
+    return model, results
 
 @app.post("/processImageBottle")
 async def process_image_bottle(file: UploadFile = File(...)):
@@ -138,7 +139,7 @@ async def process_image_bottle(file: UploadFile = File(...)):
         image_data = await file.read()
         image = Image.open(io.BytesIO(image_data))
 
-        model, results, path_image = model_process(file, image_data, item)
+        model, results = model_process(file, image_data, item)
 
         # If the image is valid, classify it
         is_valid_bottle = False
@@ -157,8 +158,8 @@ async def process_image_bottle(file: UploadFile = File(...)):
             is_valid_bottle = check_item(item, items_model)
             print(f"Valid: {is_valid_bottle}")
             if not is_valid_bottle:
-                valid_path = f"images/{item}/valid/{file.filename}"
-                invalid_path = f"images/{item}/invalid/{file.filename}" # Invalid folder
+                # valid_path = f"images/{item}/valid/{file.filename}"
+                # invalid_path = f"images/{item}/invalid/{file.filename}" # Invalid folder
                 # move_image(image_data, valid_path, invalid_path) # Move the image to invalid folder
                 return {
                     "isValidBottle": is_valid_bottle,
@@ -208,7 +209,7 @@ async def process_image_can(file: UploadFile = File(...)):
         image_data = await file.read()
         image = Image.open(io.BytesIO(image_data))
 
-        model, results, path_image = model_process(file, image_data, item)
+        model, results = model_process(file, image_data, item)
 
         # If the image is valid, classify it
         brand = "Unknown"
@@ -226,8 +227,8 @@ async def process_image_can(file: UploadFile = File(...)):
             is_valid_can = check_item(item, items_model)
             print(f"Valid: {is_valid_can}")
             if not is_valid_can:
-                valid_path = f"images/{item}/valid/{file.filename}"
-                invalid_path = f"images/{item}/invalid/{file.filename}" # Invalid folder
+                # valid_path = f"images/{item}/valid/{file.filename}"
+                # invalid_path = f"images/{item}/invalid/{file.filename}" # Invalid folder
                 # move_image(image_data, valid_path, invalid_path) # Move the image to invalid folder
                 return {
                     "isValidCan": is_valid_can,
