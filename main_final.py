@@ -28,7 +28,7 @@ can_size_classes = ['can_180', 'can_245', 'can_330', 'can_490']
 can_brand_classes = ['birdy', 'calpis_lacto', 'chang', 'green_mate', 'leo', 'nescafe', 'sing'] 
 
 CONFIDENCE_THRESHOLD = 0.3
-API_URL = " https://cookkeptback.sehub-thailand.com"
+API_URL = "https://cookkeptback.sehub-thailand.com"
 
 def upload_image_to_strapi(image_data, filename):
     url = f"{API_URL}/api/upload"  # เปลี่ยน URL นี้เป็น URL ของ Strapi
