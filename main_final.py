@@ -228,7 +228,7 @@ async def process_image_can(file: UploadFile = File(...)):
             if not is_valid_can:
                 valid_path = f"images/{item}/valid/{file.filename}"
                 invalid_path = f"images/{item}/invalid/{file.filename}" # Invalid folder
-                move_image(image_data, valid_path, invalid_path) # Move the image to invalid folder
+                # move_image(image_data, valid_path, invalid_path) # Move the image to invalid folder
                 return {
                     "isValidCan": is_valid_can,
                     "brand": brand,
