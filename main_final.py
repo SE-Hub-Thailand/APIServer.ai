@@ -109,8 +109,8 @@ def delete_image(path_image): # Delete the image from the server
 
 def model_process(file, image_data, item):
     # Check if the image is in the correct format
-    if not check_image_format(file, image_data, file.filename):
-        raise HTTPException(status_code=400, detail={"error": "Invalid image format"})
+    # if not check_image_format(file, image_data, file.filename):
+    #     raise HTTPException(status_code=400, detail={"error": "Invalid image format"})
 
     # Save the image on server
     path_image = f"images/{item}/valid/{file.filename}"
